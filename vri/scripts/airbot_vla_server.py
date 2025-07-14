@@ -86,10 +86,11 @@ def vla():
                 action_chunk_size=10
             )
         ),
-        subscriber=_video_display.VideoDisplay([CAM_LEFT_WRIST, CAM_HIGH, CAM_RIGHT_WRIST]),
-        max_hz=50,
+        # subscriber=_video_display.VideoDisplay([CAM_LEFT_WRIST, CAM_HIGH, CAM_RIGHT_WRIST]),
+        subscriber=None,  # No video display in this case
+        max_hz=20,
         num_episodes=1,
-        max_episode_steps=15*50
+        max_episode_steps=20*20
     )
 
     action_status_type, video_b64 = runtime.run()

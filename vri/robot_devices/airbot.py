@@ -478,7 +478,7 @@ class AIRBOTPlay:
             if self._reset_type & 1 > 0:
                 #robot.move_to_joint_pos([0.0] * 6)
                 robot.move_to_joint_pos(args.start_arm_joint_position[i])
-                robot.move_eef_pos(0.0)
+                # robot.move_eef_pos(0.0)
                 print(f"follower {i} moved to start position")
         
         for i, robot in enumerate(self.follower_robot):

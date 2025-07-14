@@ -57,7 +57,8 @@ class Runtime:
         logging.info("Starting a new episode")
         self._environment.reset()
         self._agent.reset()
-        self._subscriber.on_episode_start()
+        if self._subscriber is not None:
+            self._subscriber.on_episode_start()
 
         self._in_episode = True
         self._episode_steps = 0
@@ -77,13 +78,15 @@ class Runtime:
                 last_step_time = now
         
         logging.info("Episode ended")
-        self._subscriber.on_episode_end()
+        if self._subscriber is not None:
+            self._subscriber.on_episode_end()
     
     def _step(self) -> None:
         observation = self._environment.get_observation()
         action = self._agent.get_action(observation)
         self._environment.apply_action(action)
-        self._subscriber.on_step(observation, action)
+        if self._subscriber is not None:
+            self._subscriber.on_step(observation, action)
 
         if self._environment.is_episode_complete() or (self._max_episode_steps > 0 and self._episode_steps >= self._max_episode_steps):
             self._in_episode = False
