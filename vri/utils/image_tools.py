@@ -1,5 +1,9 @@
 import numpy as np
 from PIL import Image
+import imageio
+import base64
+from io import BytesIO
+import einops
 
 
 def convert_to_uint8(img: np.ndarray) -> np.ndarray:
@@ -56,3 +60,16 @@ def _resize_with_pad_pil(image: Image.Image, height: int, width: int, method: in
     zero_image.paste(resized_image, (pad_width, pad_height))
     assert zero_image.size == (width, height)
     return zero_image
+
+
+def convert_images_to_video_b64(images, fps=10):
+    # images: list of np.ndarray, shape=(H, W, 3), dtype=np.uint8
+    buf = BytesIO()
+    with imageio.get_writer(buf, format='mp4', fps=fps) as writer:
+        for img in images:
+            if img.shape[-1] != 3:
+                img = einops.rearrange(img, "c h w -> h w c")
+            writer.append_data(img)
+    video_bytes = buf.getvalue()
+    video_base64 = base64.b64encode(video_bytes).decode('utf-8')
+    return video_base64

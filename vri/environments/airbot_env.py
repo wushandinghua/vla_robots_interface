@@ -26,6 +26,8 @@ class AirbotEnvironment(_base_env.Environment):
         self.instruction = instruction
         # action queue for the last 10 actions
         self._exec_action_queue = collections.deque(maxlen=20)
+        # cache images of cam high
+        self._cam_high_images = []
 
     @override
     def reset(self) -> None:
@@ -46,6 +48,8 @@ class AirbotEnvironment(_base_env.Environment):
             raise RuntimeError("Timestep is not set. Call reset() first.")
 
         obs = self._ts.observation
+        """cache images of cam high"""
+        self._cam_high_images.append(obs[f"observation.images.{CAM_HIGH}"])
         # for k in list(obs["images"].keys()):
         #     if "_depth" in k:
         #         del obs["images"][k]

@@ -10,7 +10,7 @@ import math
 from airbot_py.arm import AIRBOTArm as AirbotArm  # 根据你的实际路径修改
 from airbot_py.arm import RobotMode, SpeedProfile
 from typing import Dict, List, Optional, List
-from types import SimpleNamespace
+import copy
 import pyudev
 from vri.utils.constants import CAM_HIGH, CAM_LEFT_WRIST, CAM_RIGHT_WRIST
 #CAM_HIGH, CAM_LEFT_WRIST, CAM_RIGHT_WRIST = "cam_high", "cam_left_wrist", "cam_right_wrist"
@@ -423,7 +423,7 @@ class AIRBOTPlay:
             config: Configuration object containing the necessary parameters (e.g., camera settings, robot IPs).
             **kwargs: Additional arguments passed to the class constructor (not used here).
         """
-        self.config = SimpleNamespace(**_ROBOT_CONFIG)
+        self.config = SimpleNamespace(**copy.deepcopy(_ROBOT_CONFIG))
         self.cameras = self.config.cameras
         print("airbot config:", self.config)
         # 0: no reset, 1: reset when robot connect, 2: reset when robot disconnect, 3: reset when robot connect and disconnect

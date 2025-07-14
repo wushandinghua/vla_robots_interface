@@ -3,6 +3,7 @@ import time
 from vri.environments import base_env as _environment
 from vri.agents import base_agent as _agent
 from vri.subscribers import subscriber as _subscriber
+from vri.utils import image_tools
 
 
 class Runtime:
@@ -37,7 +38,7 @@ class Runtime:
         self._in_episode = False
         self._episode_steps = 0
     
-    def run(self) -> int:
+    def run(self) -> tuple[int, str]:
         for _ in range(self._num_episodes):
             self._run_episode()
         
@@ -49,7 +50,8 @@ class Runtime:
         elif not self._in_episode and self._max_episode_steps > 0 and self._episode_steps >= self._max_episode_steps:
             logging.info("episode completed due to max steps reached.")
             action_status_type = 1
-        return action_status_type
+        video_b64 = image_tools.convert_images_to_video_b64(self._environment._cam_high_images, fps=self._max_hz if self._max_hz > 0 else 30)
+        return action_status_type, video_b64
     
     def _run_episode(self) -> None:
         logging.info("Starting a new episode")
