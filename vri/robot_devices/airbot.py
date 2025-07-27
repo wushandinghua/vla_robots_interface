@@ -480,6 +480,7 @@ class AIRBOTPlay:
                 robot.move_to_joint_pos(args.start_arm_joint_position[i])
                 # robot.move_eef_pos(0.0)
                 print(f"follower {i} moved to start position")
+                time.sleep(1)
         
         for i, robot in enumerate(self.follower_robot):
             # 设置机械臂控制模式
@@ -507,6 +508,7 @@ class AIRBOTPlay:
                 if self._reset_type & 2 > 0:
                     self.follower_robot[i].move_to_joint_pos([0.0] * 6)
                     self.follower_robot[i].move_eef_pos(0.0)
+                time.sleep(1)
                 self.follower_robot[i].disconnect()
         except Exception as e:
             print("Failed to disconnect airbot, err:", e)

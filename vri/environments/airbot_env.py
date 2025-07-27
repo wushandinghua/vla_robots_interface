@@ -8,6 +8,7 @@ import collections
 from vri.environments import base_env as _base_env
 from vri.environments import airbot_real_env as _real_env
 from vri.utils.constants import CAM_HIGH, CAM_LEFT_WRIST, CAM_RIGHT_WRIST
+import time
 
 class AirbotEnvironment(_base_env.Environment):
     def __init__(
@@ -28,6 +29,7 @@ class AirbotEnvironment(_base_env.Environment):
         self._exec_action_queue = collections.deque(maxlen=20)
         # cache images of cam high
         self._cam_high_images = []
+        self.start_time = time.time()
 
     @override
     def reset(self) -> None:
@@ -36,11 +38,12 @@ class AirbotEnvironment(_base_env.Environment):
     @override
     def is_episode_complete(self) -> bool:
         """Check if the current episode is complete."""
+        end = time.time()
         if len(self._exec_action_queue) < 20:
             return False
         arr = np.array(self._exec_action_queue) # shape=(10, 14)
         diff = arr.max(axis=0) - arr.min(axis=0)
-        return np.all(diff < 0.01)
+        return np.all(diff < 0.01) and (end - self.start_time > 5.5)
 
     @override
     def get_observation(self) -> dict:

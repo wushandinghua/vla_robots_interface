@@ -55,14 +55,14 @@ def capture_cam_high_images():
     from vri.robot_devices.airbot import OpenCVCamera, _ROBOT_CONFIG
     cam_high = OpenCVCamera(_ROBOT_CONFIG["cameras"][CAM_HIGH])
     cam_high.connect()
-    time.sleep(0.1)  # 等待相机连接稳定
+    time.sleep(0.1)  # wait for camera to connect stable
     while capture_running:
         frame = cam_high.read()
         cam_high_images.append(frame)
         time.sleep(1 / _ROBOT_CONFIG["cameras"][CAM_HIGH]["fps"])  # Capture at 30 FPS
     cam_high.disconnect()
 
-@app.route('/vla', methods=['POST'])
+@app.route('/vla', methods=['POST', 'GET'])
 def vla():
     data = request.json
     logging.info(f"received request: {data}")
@@ -100,7 +100,7 @@ def vla():
     }
     return jsonify({"status": "success", "message": "robot action complete", "data": data}), 200
 
-@app.route('/video', methods=['POST'])
+@app.route('/video', methods=['POST', 'GET'])
 def video():
     global cam_high_images, capture_thread, capture_running
     
