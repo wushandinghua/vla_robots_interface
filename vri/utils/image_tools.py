@@ -73,3 +73,26 @@ def convert_images_to_video_b64(images, fps=10):
     video_bytes = buf.getvalue()
     video_base64 = base64.b64encode(video_bytes).decode('utf-8')
     return video_base64
+
+def concat_images_horizontally(cam_high_images, cam_left_wrist_images, cam_right_wrist_images):
+    """Concatenate images from three cameras horizontally."""
+    if not (len(cam_high_images) == len(cam_left_wrist_images) == len(cam_right_wrist_images)):
+        raise ValueError("All camera image lists must have the same length.")
+
+    concatenated_images = []
+    for high_img, left_img, right_img in zip(cam_high_images, cam_left_wrist_images, cam_right_wrist_images):
+        # Ensure all images are in the same format
+        high_img = high_img if high_img.shape[-1] == 3 else einops.rearrange(high_img, "c h w -> h w c")
+        left_img = left_img if left_img.shape[-1] == 3 else einops.rearrange(left_img, "c h w -> h w c")
+        right_img = right_img if right_img.shape[-1] == 3 else einops.rearrange(right_img, "c h w -> h w c")
+
+        # Concatenate images horizontally
+        max_height = max(high_img.shape[0], left_img.shape[0], right_img.shape[0])
+        total_width = high_img.shape[1] + left_img.shape[1] + right_img.shape[1]
+        concatenated_image = np.zeros((max_height, total_width, 3), dtype=np.uint8)
+        concatenated_image[:left_img.shape[0], :left_img.shape[1]] = left_img
+        concatenated_image[:high_img.shape[0], left_img.shape[1]:left_img.shape[1] + high_img.shape[1]] = high_img
+        concatenated_image[:right_img.shape[0], left_img.shape[1] + high_img.shape[1]:left_img.shape[1] + high_img.shape[1]+right_img.shape[1]] = right_img
+        concatenated_images.append(concatenated_image)
+
+    return concatenated_images

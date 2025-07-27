@@ -47,20 +47,34 @@ for k, ws_client in ws_client_dict.items():
 
 # cache images of cam high
 cam_high_images = []
+cam_left_wrist_images = []
+cam_right_wrist_images = []
 capture_thread = None
 capture_running = False
 
 def capture_cam_high_images():
-    global cam_high_images, capture_running
+    global cam_high_images, capture_running, cam_left_wrist_images, cam_right_wrist_images
     from vri.robot_devices.airbot import OpenCVCamera, _ROBOT_CONFIG
     cam_high = OpenCVCamera(_ROBOT_CONFIG["cameras"][CAM_HIGH])
     cam_high.connect()
     time.sleep(0.1)  # wait for camera to connect stable
+    cam_left_wrist = OpenCVCamera(_ROBOT_CONFIG["cameras"][CAM_LEFT_WRIST])
+    cam_left_wrist.connect()
+    time.sleep(0.1)  # wait for camera to connect stable
+    cam_right_wrist = OpenCVCamera(_ROBOT_CONFIG["cameras"][CAM_RIGHT_WRIST])
+    cam_right_wrist.connect()
+    time.sleep(0.1)  # wait for camera to connect stable
     while capture_running:
-        frame = cam_high.read()
-        cam_high_images.append(frame)
+        high_frame = cam_high.async_read()
+        cam_high_images.append(high_frame)
+        left_wrist_frame = cam_left_wrist.async_read()
+        cam_left_wrist_images.append(left_wrist_frame)
+        right_wrist_frame = cam_right_wrist.async_read()
+        cam_right_wrist_images.append(right_wrist_frame)
         time.sleep(1 / _ROBOT_CONFIG["cameras"][CAM_HIGH]["fps"])  # Capture at 30 FPS
     cam_high.disconnect()
+    cam_left_wrist.disconnect()
+    cam_right_wrist.disconnect()
 
 @app.route('/vla', methods=['POST', 'GET'])
 def vla():
@@ -102,7 +116,7 @@ def vla():
 
 @app.route('/video', methods=['POST', 'GET'])
 def video():
-    global cam_high_images, capture_thread, capture_running
+    global cam_high_images, capture_thread, capture_running, cam_left_wrist_images, cam_right_wrist_images
     
     data = request.json
     logging.info(f"received request: {data}")
@@ -121,7 +135,12 @@ def video():
             capture_thread.join()
         logging.info("video capture finished")
         # Convert images to video
-        video_b64 = image_tools.convert_images_to_video_b64(cam_high_images, fps=25)
+        images_all = image_tools.concat_images_horizontally(
+            cam_high_images,
+            cam_left_wrist_images,
+            cam_right_wrist_images
+        )
+        video_b64 = image_tools.convert_images_to_video_b64(images_all, fps=25)
         data = {
             "video_b64": video_b64
         }

@@ -29,6 +29,8 @@ class AirbotEnvironment(_base_env.Environment):
         self._exec_action_queue = collections.deque(maxlen=20)
         # cache images of cam high
         self._cam_high_images = []
+        self._cam_left_wrist_images = []
+        self._cam_right_wrist_images = []
         self.start_time = time.time()
 
     @override
@@ -53,6 +55,8 @@ class AirbotEnvironment(_base_env.Environment):
         obs = self._ts.observation
         """cache images of cam high"""
         self._cam_high_images.append(obs[f"observation.images.{CAM_HIGH}"])
+        self._cam_left_wrist_images.append(obs[f"observation.images.{CAM_LEFT_WRIST}"])
+        self._cam_right_wrist_images.append(obs[f"observation.images.{CAM_RIGHT_WRIST}"])
         # for k in list(obs["images"].keys()):
         #     if "_depth" in k:
         #         del obs["images"][k]
