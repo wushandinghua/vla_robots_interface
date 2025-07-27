@@ -12,6 +12,7 @@ import threading
 import logging
 logging.getLogger().setLevel(logging.INFO)
 import numpy as np
+import argparse
 
 """
 conda activate airbot_5_8
@@ -51,6 +52,7 @@ cam_left_wrist_images = []
 cam_right_wrist_images = []
 capture_thread = None
 capture_running = False
+is_concat_three_imgs = False
 
 def capture_cam_high_images():
     global cam_high_images, capture_running, cam_left_wrist_images, cam_right_wrist_images
@@ -116,7 +118,7 @@ def vla():
 
 @app.route('/video', methods=['POST', 'GET'])
 def video():
-    global cam_high_images, capture_thread, capture_running, cam_left_wrist_images, cam_right_wrist_images
+    global cam_high_images, capture_thread, capture_running, cam_left_wrist_images, cam_right_wrist_images, is_concat_three_imgs
     
     data = request.json
     logging.info(f"received request: {data}")
@@ -137,11 +139,14 @@ def video():
             capture_thread.join()
         logging.info("video capture finished")
         # Convert images to video
-        images_all = image_tools.concat_images_horizontally(
-            cam_high_images,
-            cam_left_wrist_images,
-            cam_right_wrist_images
-        )
+        if is_concat_three_imgs:
+            images_all = image_tools.concat_images_horizontally(
+                cam_high_images,
+                cam_left_wrist_images,
+                cam_right_wrist_images
+            )
+        else:
+            images_all = cam_high_images
         video_b64 = image_tools.convert_images_to_video_b64(images_all, fps=25)
         data = {
             "video_b64": video_b64
@@ -149,5 +154,21 @@ def video():
         return jsonify({"status": "success", "message": "video capture finished", "data": data}), 200
     return jsonify({"status": "error", "message": "unknown action", "data":{}}), 400
 
+def modify_config(is_concat_three_imgs_args):
+    global is_concat_three_imgs
+    is_concat_three_imgs = is_concat_three_imgs_args
+    if is_concat_three_imgs:
+        logging.info("Using concat three images")
+    else:
+        logging.info("Using only cam high images")
+
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Airbot VLA Server")
+
+    # Add arguments
+    parser.add_argument("--is_concat_three_imgs", type=bool, default=False, help="is use concat three images")
+
+    # Parse arguments
+    args = parser.parse_args()
+    modify_config(args.is_concat_three_imgs)
     app.run(host='192.168.1.115', port=5000, debug=True)
