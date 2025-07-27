@@ -123,6 +123,8 @@ def video():
     instruction = data.get('action')
     if 'start' in instruction:
         cam_high_images = []
+        cam_left_wrist_images = []
+        cam_right_wrist_images = []
         capture_running = True
         """read images """
         capture_thread = threading.Thread(target=capture_cam_high_images)
