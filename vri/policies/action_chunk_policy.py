@@ -30,6 +30,7 @@ class ActionChunkPolicy(_base_policy.BasePolicy):
             lambda x: x[self._cur_step, ...],
             self._last_results
         )
+        results["cur_step"] = self._cur_step
         self._cur_step += 1
 
         if self._cur_step >= self._action_chunk_size:

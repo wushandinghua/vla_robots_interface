@@ -32,26 +32,13 @@ class VideoDisplay(_subscriber.Subscriber):
     def on_step(self, observation: dict, action: dict) -> None:
         assert self._ax_list is not None
 
-        #im = observation["image"][0]  # [C, H, W]
-        #im = observation[f"{self._subscriber_name}"]  # [C, H, W]
-        #im = np.transpose(im, (1, 2, 0))  # [H, W, C]
-
-        #im = observation["cam_wrist"]  # [C, H, W]
-        #if self._plt_img_wrist is None:
-        #    self._plt_img_wrist = self._ax_wrist.imshow(im)
-        #else:
-        #    self._plt_img.set_data(im)
-
-        #self._ax.set_title(f'joint states:{observation["observation/joint_position"]},{observation["observation/gripper_position"]}')
         for idx in range(len(self._subscriber_name_list)):
-            # im = observation[f"observation/{self._subscriber_name_list[idx]}"]
             im = observation[f"{self._subscriber_name_list[idx]}"]
-            im = np.transpose(im, (1, 2, 0))  # [H, W, C]
+            # im = np.transpose(im, (1, 2, 0))  # [H, W, C]
             if self._plt_img_list[idx] is None:
                 self._plt_img_list[idx] = self._ax_list[idx].imshow(im)
             else:
                 self._plt_img_list[idx].set_data(im)
-        # plt.suptitle(f'joint states:{observation["observation/joint_position"]},{observation["observation/gripper_position"]}')
         plt.suptitle(f'state:{observation["state"]}')
         plt.pause(0.001)
 
