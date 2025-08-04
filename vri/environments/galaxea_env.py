@@ -31,7 +31,6 @@ class GalaxeaEnvironment(_base_env.Environment):
         self._cam_high_images = []
         self._cam_left_wrist_images = []
         self._cam_right_wrist_images = []
-        self.start_time = time.time()
 
     @override
     def reset(self) -> None:
@@ -45,7 +44,7 @@ class GalaxeaEnvironment(_base_env.Environment):
             return False
         arr = np.array(self._exec_action_queue) # shape=(10, 14)
         diff = arr.max(axis=0) - arr.min(axis=0)
-        return np.all(diff < 0.01) and (end - self.start_time > 5.5)
+        return np.all(diff < 0.01)
 
     @override
     def get_observation(self) -> dict:

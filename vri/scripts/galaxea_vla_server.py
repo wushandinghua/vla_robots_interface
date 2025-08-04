@@ -14,10 +14,11 @@ logging.getLogger().setLevel(logging.INFO)
 import numpy as np
 
 """
-pip install flask==3.1.1
-pip install imageio==2.37.0
-pip install imageio-ffmpeg==0.6.0
-export PYTHONPATH=/home/zq/work/fnii/vla_robots_interface:$PYTHONPATH
+source /home/nvidia/users/quebinbin/workspace/projects/openpi/examples/galaxea_r1/.venv/bin/activate
+uv pip install flask==3.1.1
+uv pip install imageio==2.37.0
+uv pip install imageio-ffmpeg==0.6.0
+export PYTHONPATH=/home/nvidia/users/quebinbin/workspace/projects/vla_robots_interface:$PYTHONPATH
 python vri/scripts/airbot_vla_server.py
 """
 
@@ -60,7 +61,7 @@ def vla():
         subscriber=None,  # No video display in this case
         max_hz=10,
         num_episodes=1,
-        max_episode_steps=10*20
+        max_episode_steps=10*50
     )
 
     action_status_type, video_b64 = runtime.run()
