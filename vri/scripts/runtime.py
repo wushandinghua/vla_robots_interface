@@ -50,6 +50,7 @@ class Runtime:
         elif not self._in_episode and self._max_episode_steps > 0 and self._episode_steps >= self._max_episode_steps:
             logging.info("episode completed due to max steps reached.")
             action_status_type = 1
+        """
         cam_all_images = image_tools.concat_images_horizontally(
             self._environment._cam_high_images,
             self._environment._cam_left_wrist_images,
@@ -57,6 +58,8 @@ class Runtime:
         )
         video_b64 = image_tools.convert_images_to_video_b64(cam_all_images, fps=self._max_hz if self._max_hz > 0 else 30)
         return action_status_type, video_b64
+        """
+        return action_status_type, ""
     
     def _run_episode(self) -> None:
         logging.info("Starting a new episode")

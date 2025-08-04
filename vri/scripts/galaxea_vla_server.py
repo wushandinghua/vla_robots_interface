@@ -69,3 +69,6 @@ def vla():
         "video_b64": video_b64
     }
     return jsonify({"status": "success", "message": "robot action complete", "data": data}), 200
+
+if __name__ == '__main__':
+    app.run(host='10.100.54.192', port=5000, debug=True)
