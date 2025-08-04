@@ -44,7 +44,7 @@ class GalaxeaEnvironment(_base_env.Environment):
             return False
         arr = np.array(self._exec_action_queue) # shape=(10, 14)
         diff = arr.max(axis=0) - arr.min(axis=0)
-        return np.all(diff < 0.01)
+        return np.all(diff < 0.05)
 
     @override
     def get_observation(self) -> dict:

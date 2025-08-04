@@ -61,7 +61,7 @@ def vla():
         subscriber=None,  # No video display in this case
         max_hz=10,
         num_episodes=1,
-        max_episode_steps=10*50
+        max_episode_steps=10*30
     )
 
     action_status_type, video_b64 = runtime.run()
