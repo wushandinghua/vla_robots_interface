@@ -5,7 +5,7 @@ from vri.environments import galaxea_env as _galaxea_env
 from vri.agents import policy_agent as _policy_agent
 from vri.policies import action_chunk_policy as _action_chunk_policy
 from vri.policies import websocket_client_policy as _websocket_client_policy
-from vri.utils.constants import CAM_HIGH, CAM_LEFT_WRIST, CAM_RIGHT_WRIST
+from vri.utils.constants import CAM_HIGH, CAM_LEFT_WRIST, CAM_RIGHT_WRIST, CHUNK_SIZE
 from vri.utils import image_tools
 import time
 import threading
@@ -54,7 +54,7 @@ def vla():
         agent=_policy_agent.PolicyAgent(
             policy=_action_chunk_policy.ActionChunkPolicy(
                 policy=ws_client_policy,
-                action_chunk_size=10
+                action_chunk_size=CHUNK_SIZE
             )
         ),
         # subscriber=_video_display.VideoDisplay([CAM_LEFT_WRIST, CAM_HIGH, CAM_RIGHT_WRIST]),

@@ -52,41 +52,21 @@ class AirbotEnvironment(_base_env.Environment):
         if self._ts is None:
             raise RuntimeError("Timestep is not set. Call reset() first.")
 
-        obs = self._ts.observation
+        obs = self._ts
         """cache images of cam high"""
         self._cam_high_images.append(obs[f"observation.images.{CAM_HIGH}"])
         self._cam_left_wrist_images.append(obs[f"observation.images.{CAM_LEFT_WRIST}"])
         self._cam_right_wrist_images.append(obs[f"observation.images.{CAM_RIGHT_WRIST}"])
-        # for k in list(obs["images"].keys()):
-        #     if "_depth" in k:
-        #         del obs["images"][k]
-
-        #print("cam wrist image shape before:", np.array(obs["images"][f"{CAM_WRIST}"]).shape)
-        #print("cam exterior image shape before:", np.array(obs["images"][f"{CAM_WRIST}"]).shape)
-        # for cam_name in obs["images"]:
-        #     #img = image_tools.convert_to_uint8(
-        #     #    image_tools.resize_with_pad(obs["images"][cam_name], self._render_height, self._render_width)
-        #     #)
-        #     #obs["images"][cam_name] = einops.rearrange(img, "h w c -> c h w")
-        #     img = image_tools.resize_with_pad(obs["images"][cam_name], self._render_height, self._render_width)
-        #     obs["images"][cam_name] = img 
+        
         for key in obs.keys():
-            #img = image_tools.convert_to_uint8(
-            #    image_tools.resize_with_pad(obs["images"][cam_name], self._render_height, self._render_width)
-            #)
-            #obs["images"][cam_name] = einops.rearrange(img, "h w c -> c h w")
             if "images" not in key: continue
+            if obs[key].shape[0] == self._render_height and obs[key].shape[1] == self._render_width: continue
             img = image_tools.convert_to_uint8(
                 image_tools.resize_with_pad(obs[key], self._render_height, self._render_width)
             )
-            obs[key] = einops.rearrange(img, "h w c -> c h w")
+            # obs[key] = einops.rearrange(img, "h w c -> c h w")
+            obs[key] = img
 
-        #print("cam wrist image shape after:", obs["images"][f"{CAM_WRIST}"].shape)
-        #print("cam exterior image shape after:", obs["images"][f"{CAM_WRIST}"].shape)
-        # return {
-        #     "state": obs["qpos"],
-        #     "images": obs["images"],
-        # }
         return {
             CAM_HIGH: obs[f"observation.images.{CAM_HIGH}"],
             CAM_LEFT_WRIST: obs[f"observation.images.{CAM_LEFT_WRIST}"],
@@ -98,7 +78,7 @@ class AirbotEnvironment(_base_env.Environment):
     @override
     def apply_action(self, action: dict) -> None:
         self._exec_action_queue.append(action["actions"])
-        self._ts = self._env.step(action["actions"])
+        self._ts = self._env.step(action)
 
     @property
     def gen_fake_observation(self):

@@ -24,11 +24,13 @@ class RealEnv:
     """
 
     def __init__(self, reset_position: Optional[List[float]] = None, reset_type: int = 3):
-        self._reset_position = reset_position[:14] if reset_position else constants.DEFAULT_RESET_POSITION
+        self._reset_position = reset_position[:14] if reset_position else constants.AIRBOT_DEFAULT_RESET_POSITION
         self._reset_type = reset_type
 
         # new airbot controller
         self.robot = airbot.AIRBOTPlay(reset_type=self._reset_type, reset_position=self._reset_position)
+        self._chunk_size = constants.CHUNK_SIZE
+        self._last_observation = None
 
         # if setup_robots:
         #     self.setup_robots()
@@ -44,7 +46,9 @@ class RealEnv:
         # obs["qpos"] = self.get_qpos()
         # obs["images"] = self.get_images()
         # return obs
-        return self.robot.capture_observation()
+        ret = self.robot.capture_observation()
+        self._last_observation = ret
+        return ret
         
 
     def get_reward(self):
@@ -55,17 +59,24 @@ class RealEnv:
             # Reboot robot 
             self.setup_robots()
             print("real env setup finished")
-        return dm_env.TimeStep(
-            step_type=dm_env.StepType.FIRST, reward=self.get_reward(), discount=None, observation=self.get_observation()
-        )
+        # return dm_env.TimeStep(
+        #     step_type=dm_env.StepType.FIRST, reward=self.get_reward(), discount=None, observation=self.get_observation()
+        # )
+        return self.get_observation()
 
     def step(self, action):
+        cur_step = action.get("cur_step")
+        action = action["actions"]
         assert action.shape[-1] == 14
         self.robot.send_action(action)
-        time.sleep(constants.DT)
-        return dm_env.TimeStep(
-            step_type=dm_env.StepType.MID, reward=self.get_reward(), discount=None, observation=self.get_observation()
-        )
+        # return dm_env.TimeStep(
+        #     step_type=dm_env.StepType.MID, reward=self.get_reward(), discount=None, observation=self.get_observation()
+        # )
+        if cur_step >= (self._chunk_size - 1):
+            time.sleep(constants.DT)
+            return self.get_observation()
+        
+        return self._last_observation
 
 
 def make_real_env(reset_position: Optional[List[float]] = None, reset_type: int = 3) -> RealEnv:
