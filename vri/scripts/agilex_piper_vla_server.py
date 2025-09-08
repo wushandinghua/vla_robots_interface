@@ -11,10 +11,12 @@ logging.getLogger().setLevel(logging.INFO)
 import numpy as np
 
 """
+conda create -n piper_run_env_v179 python=3.10.18
 conda activate piper_run_env_v179
-uv pip install flask==3.1.1
-uv pip install imageio==2.37.0
-uv pip install imageio-ffmpeg==0.6.0
+pip install flask==3.1.1
+pip install imageio==2.37.0
+pip install imageio-ffmpeg==0.6.0
+pip install opencv-python==4.12.0.88
 export PYTHONPATH=/home/nvidia/users/quebinbin/workspace/projects/vla_robots_interface:$PYTHONPATH
 python vri/scripts/agilex_piper_vla_server.py
 """
