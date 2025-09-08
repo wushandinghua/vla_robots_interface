@@ -22,7 +22,7 @@ python vri/scripts/agilex_piper_vla_server.py
 """
 
 app = Flask(__name__)
-remote_model_ip = "10.100.54.173"
+remote_model_ip = "192.168.1.151"
 ws_client_base = _websocket_client_policy.WebsocketClientPolicy(host=remote_model_ip, port=8000)
 ws_client_dict = {
     "base": ws_client_base
