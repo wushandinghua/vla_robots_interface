@@ -176,11 +176,12 @@ class OpenCVCamera:
             )
 
         # 第五步：设置视频编码格式（MJPG 可大幅提升帧率 & 减少 CPU 压力）
-        if self.camera_usb_hardware_index == "usb-0:2.2":
-            self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
-            print("设置 MJPG 编码")
-        else:
-            self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"YUYV"))
+        self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+        # if self.camera_usb_hardware_index == "usb-0:2.2":
+        #     self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+        #     print("设置 MJPG 编码")
+        # else:
+        #     self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"YUYV"))
 
         # 更新成员变量记录实际成功的参数值
         self.fps = actual_fps
@@ -268,6 +269,8 @@ class OpenCVCamera:
             self.thread = threading.Thread(target=self.read_loop, args=())
             self.thread.daemon = True
             self.thread.start()
+            ## zq
+            time.sleep(2)  # give some time for the thread to start
 
         num_tries = 0
         while self.color_image is None:

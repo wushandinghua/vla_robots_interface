@@ -11,35 +11,36 @@ from piper_sdk import C_PiperInterface_V2 as PiperArm
 
 _PIPER_ROBOT_CONFIG = {
     "follower_number": 2,
-    "follower_can": ["can0","can1"],
+    "follower_can": ["can_left", "can_right"],
     "start_arm_joint_position": [
         0, 0, 0, 0, 0, 0, 0, 
         0, 0, 0, 0, 0, 0, 0
     ],
     "cameras": {
+        CAM_HIGH:{
+            "camera_index": 4,
+            "fps": 30,
+            "width": 640,
+            "height": 480,
+            "color_mode": "rgb",
+            "camera_usb_hardware_index": "usb-0:3.4:1.3"
+       },
         CAM_LEFT_WRIST:{
             "camera_index": 2,
             "fps": 25,
             "width": 640,
             "height": 480,
             "color_mode": "rgb",
-            "camera_usb_hardware_index": "usb-0:1.1.2"
+            "camera_usb_hardware_index": "usb-0:4.2.1"
             },
-        CAM_HIGH:{
-            "camera_index": 4,
-            "fps": 25,
-            "width": 640,
-            "height": 480,
-            "color_mode": "rgb",
-            "camera_usb_hardware_index": "usb-0:2.2"
-            },
+        
         CAM_RIGHT_WRIST:{
             "camera_index": 6,
             "fps": 25,
             "width": 640,
             "height": 480,
             "color_mode": "rgb",
-            "camera_usb_hardware_index": "usb-0:1.3.2"
+            "camera_usb_hardware_index": "usb-0:4.3.1"
             }
     }
 }
@@ -98,17 +99,18 @@ class PiperPlay:
         if not isinstance(target_joint_positions, list):
             target_joint_positions = list(target_joint_positions)
         # 这里假设非阻塞执行，视为并发控制
+        # print("send_action:", target_joint_positions)
         for i in range(len(self.follower_robot)):
-            joint_0 = round(target_joint_positions[i * 7 + 0])
-            joint_1 = round(target_joint_positions[i * 7 + 1])
-            joint_2 = round(target_joint_positions[i * 7 + 2])
-            joint_3 = round(target_joint_positions[i * 7 + 3])
-            joint_4 = round(target_joint_positions[i * 7 + 4])
-            joint_5 = round(target_joint_positions[i * 7 + 5])
-            joint_6 = abs(target_joint_positions[i * 7 + 6])
+            joint_0 = int(round(target_joint_positions[i * 7 + 0]))
+            joint_1 = int(round(target_joint_positions[i * 7 + 1]))
+            joint_2 = int(round(target_joint_positions[i * 7 + 2]))
+            joint_3 = int(round(target_joint_positions[i * 7 + 3]))
+            joint_4 = int(round(target_joint_positions[i * 7 + 4]))
+            joint_5 = int(round(target_joint_positions[i * 7 + 5]))
+            joint_6 = int(round(target_joint_positions[i * 7 + 6]))
             self.follower_robot[i].MotionCtrl_2(0x01, 0x01, 100, 0x00)
             self.follower_robot[i].JointCtrl(joint_0, joint_1, joint_2, joint_3, joint_4, joint_5)
-            self.follower_robot[i].GripperCtrl(joint_6)
+            self.follower_robot[i].GripperCtrl(joint_6, 1000, 0x01, 0)
 
     def connect(self):
         if self.is_connected:
@@ -117,7 +119,11 @@ class PiperPlay:
         
          # Connect the cameras
         for name in self.cameras:
+            print(f"Connecting to camera: {name}")
             self.cameras[name].connect()
+            ## zq
+            # if name == CAM_HIGH:
+            #     time.sleep(0.5)  # Wait a bit for the camera to initialize
 
         """
         设置控制模式和初始关节位置
@@ -149,8 +155,8 @@ class PiperPlay:
             if self._reset_type & 2 > 0:
                 self.send_action([0] * 14)
             
-            # for i in range(self.config.follower_number):
-            #     self.follower_robot[i].disconnect()
+            for i in range(self.config.follower_number):
+                self.follower_robot[i].DisconnectPort()
         except Exception as e:
             print("Failed to disconnect Piper, err:", e)
         self.is_connected = False
@@ -180,7 +186,7 @@ class PiperPlay:
             join_msg = follower_robot[i].GetArmJointMsgs()
             state.extend(get_joint_positions(join_msg.joint_state))
             gripper_msg = follower_robot[i].GetArmGripperMsgs()
-            state.extend(get_gripper_position(gripper_msg.gripper_state))
+            state.append(get_gripper_position(gripper_msg.gripper_state))
         data["observation.state"] = state
         return data
 
@@ -226,12 +232,17 @@ class PiperPlay:
 
 if __name__ == "__main__":
     robot = PiperPlay(reset_type=1, reset_position=None)
+    #robot.connect()
     robot.send_action([-425, -196, -12000, 53000, 9000, -40000, 0, -425, -196, -12000, 53000, 9000, -40000, 0])
-    time.sleep(5)
+    #robot.send_action([-425, -196, -12000, 53000, 9000, -40000, 0])
+    time.sleep(3) 
+    #print("low data:", robot.get_low_dim_data())
     print("obs1:", robot.capture_observation())
-    robot.send_action([0.0] * 6 + [0.4] + [0.0] * 6 + [0.4])
-    time.sleep(5)
+    robot.send_action([0.0] * 6 + [40000] + [0.0] * 6 + [40000])
+    #robot.send_action([0.0] * 6 + [40000]) 
+    time.sleep(3)
     robot.send_action([0.0] * 6 + [0] + [0.0] * 6 + [0])
-    time.sleep(5)
+    #robot.send_action([0.0] * 6 + [0]) 
+    time.sleep(3)
     print("obs2:", robot.capture_observation())
     robot.disconnect()
