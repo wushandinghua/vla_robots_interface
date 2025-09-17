@@ -29,7 +29,7 @@ python vri/scripts/agilex_piper_vla_server.py
 """
 
 app = Flask(__name__)
-remote_model_ip = "192.168.1.151"
+remote_model_ip = "192.168.1.187"
 ws_client_base = _websocket_client_policy.WebsocketClientPolicy(host=remote_model_ip, port=8000)
 ws_client_dict = {
     "base": ws_client_base
@@ -57,32 +57,52 @@ def vla():
     print("pose:",metadata.get("reset_pose"))
     logging.info(f"Server metadata: {metadata}")
     
-    try:
-        runtime = _runtime.Runtime(
-            environment=_piper_env.PiperEnvironment(reset_position=metadata.get("reset_pose", None), instruction=instruction, reset_type=1),
+    runtime = _runtime.Runtime(
+            environment=_piper_env.PiperEnvironment(reset_position=metadata.get("reset_pose", None), instruction=instruction, reset_type=3),
             agent=_policy_agent.PolicyAgent(
                 policy=_action_chunk_policy.ActionChunkPolicy(
                     policy=ws_client_policy,
                     action_chunk_size=CHUNK_SIZE
                 )
             ),
-            subscriber=_video_display.VideoDisplay([CAM_LEFT_WRIST, CAM_HIGH, CAM_RIGHT_WRIST]),
-            # subscriber=None,  # No video display in this case
-            max_hz=20,
+            # subscriber=_video_display.VideoDisplay([CAM_LEFT_WRIST, CAM_HIGH, CAM_RIGHT_WRIST]),
+            subscriber=None,  # No video display in this case
+            max_hz=5,
             num_episodes=1,
             max_episode_steps=10*500
         )
-        action_status_type, video_b64 = runtime.run()
-        data = {
+    action_status_type, video_b64 = runtime.run()
+    data = {
             "action_status_type": action_status_type,
             "video_b64": video_b64
-        }
-        return jsonify({"status": "success", "message": "robot action complete", "data": data}), 200
-    except Exception as e:
-        robot = runtime._environment._env.robot
-        robot.send_action([0] * 14)
-        for i in range(robot.config.follower_number):
-                robot.follower_robot[i].DisconnectPort()
+    }
+    return jsonify({"status": "success", "message": "robot action complete", "data": data}), 200
+    # try:
+    #     runtime = _runtime.Runtime(
+    #         environment=_piper_env.PiperEnvironment(reset_position=metadata.get("reset_pose", None), instruction=instruction, reset_type=3),
+    #         agent=_policy_agent.PolicyAgent(
+    #             policy=_action_chunk_policy.ActionChunkPolicy(
+    #                 policy=ws_client_policy,
+    #                 action_chunk_size=CHUNK_SIZE
+    #             )
+    #         ),
+    #         # subscriber=_video_display.VideoDisplay([CAM_LEFT_WRIST, CAM_HIGH, CAM_RIGHT_WRIST]),
+    #         subscriber=None,  # No video display in this case
+    #         max_hz=7,
+    #         num_episodes=1,
+    #         max_episode_steps=10*500
+    #     )
+    #     action_status_type, video_b64 = runtime.run()
+    #     data = {
+    #         "action_status_type": action_status_type,
+    #         "video_b64": video_b64
+    #     }
+    #     return jsonify({"status": "success", "message": "robot action complete", "data": data}), 200
+    # except Exception as e:
+    #     robot = runtime._environment._env.robot
+    #     robot.send_action([0] * 14)
+    #     for i in range(robot.config.follower_number):
+    #             robot.follower_robot[i].DisconnectPort()
 
 if __name__ == '__main__':
     app.run(host='192.168.0.210', port=5000, debug=True)

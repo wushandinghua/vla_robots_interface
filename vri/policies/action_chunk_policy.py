@@ -26,8 +26,14 @@ class ActionChunkPolicy(_base_policy.BasePolicy):
             self._last_results = self._policy.infer(obs)
             self._cur_step = 0
         
+        def slicer(x):
+            if isinstance(x, np.ndarray):
+                return x[self._cur_step, ...]
+            else:
+                return x
+        
         results = tree.map_structure(
-            lambda x: x[self._cur_step, ...],
+            slicer,
             self._last_results
         )
         results["cur_step"] = self._cur_step
