@@ -28,12 +28,12 @@ class RealEnv:
                         }
     """
 
-    def __init__(self, reset_position: Optional[List[float]] = None, reset_type: int = 3):
+    def __init__(self, reset_position: Optional[List[float]] = None, reset_type: int = 3, exec_hz: int = 10):
         self._reset_position = reset_position
         self._reset_type = reset_type
 
         # new agilex piper controller
-        self.robot = agilex_piper.PiperPlay(reset_type=self._reset_type, reset_position=self._reset_position)
+        self.robot = agilex_piper.PiperPlay(reset_type=self._reset_type, reset_position=self._reset_position, exec_hz=exec_hz)
         self._chunk_size = constants.CHUNK_SIZE
         self._last_observation = None
 
@@ -81,5 +81,5 @@ class RealEnv:
         return self.get_observation()
 
 
-def make_real_env(reset_position: Optional[List[float]] = None, reset_type: int = 3) -> RealEnv:
-    return RealEnv(reset_position=reset_position, reset_type=reset_type)
+def make_real_env(reset_position: Optional[List[float]] = None, reset_type: int = 3, exec_hz: int = 10) -> RealEnv:
+    return RealEnv(reset_position=reset_position, reset_type=reset_type, exec_hz=exec_hz)

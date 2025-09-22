@@ -23,7 +23,8 @@ _PIPER_ROBOT_CONFIG = {
             "width": 640,
             "height": 480,
             "color_mode": "rgb",
-            "camera_usb_hardware_index": "usb-0:1.4"
+            "camera_usb_hardware_index": "usb-0:2.4",
+            "type": "wb_socket"
        },
         CAM_LEFT_WRIST:{
             "camera_index": 2,
@@ -31,7 +32,8 @@ _PIPER_ROBOT_CONFIG = {
             "width": 640,
             "height": 480,
             "color_mode": "rgb",
-            "camera_usb_hardware_index": "usb-0:4.2.4"
+            "camera_usb_hardware_index": "usb-0:4.2.4",
+            "type": "opencv"
             },
         
         CAM_RIGHT_WRIST:{
@@ -40,7 +42,8 @@ _PIPER_ROBOT_CONFIG = {
             "width": 640,
             "height": 480,
             "color_mode": "rgb",
-            "camera_usb_hardware_index": "usb-0:4.4.3"
+            "camera_usb_hardware_index": "usb-0:4.4.3",
+            "type": "opencv"
             }
     }
 }
@@ -53,7 +56,7 @@ class PiperPlay:
     and robotic arms (leader and follower robots).
     """
 
-    def __init__(self, reset_type, reset_position) -> None:
+    def __init__(self, reset_type, reset_position, exec_hz) -> None:
         """
         Initializes the PiperPlay object by connecting to cameras and robots.
 
@@ -67,10 +70,15 @@ class PiperPlay:
         
         self._reset_type = reset_type
         self._reset_position = reset_position or self.config.start_arm_joint_position
-        print("reset_type:", self._reset_type, "reset_position:", self._reset_position)
+        self._exec_hz = exec_hz
+        print("reset_type:", self._reset_type, "reset_position:", self._reset_position, "exec_hz:", self._exec_hz)
         # Initialize cameras
         for name in self.cameras:
-            self.cameras[name] = OpenCVCamera(self.cameras[name])
+            if self.cameras[name]["type"] == "wb_socket":
+                from vri.robot_devices.camera import WbSocketCamera
+                self.cameras[name] = WbSocketCamera(self.cameras[name])
+            else:
+                self.cameras[name] = OpenCVCamera(self.cameras[name])
         
         self.logs = {}
         self.is_connected = False
@@ -109,10 +117,11 @@ class PiperPlay:
             joint_4 = int(round(target_joint_positions[i * 7 + 4]))
             joint_5 = int(round(target_joint_positions[i * 7 + 5]))
             joint_6 = int(round(target_joint_positions[i * 7 + 6]))
-            self.follower_robot[i].MotionCtrl_2(0x01, 0x01, 100, 0x00)
+            self.follower_robot[i].MotionCtrl_2(0x01, 0x01, 50, 0x00)
             self.follower_robot[i].JointCtrl(joint_0, joint_1, joint_2, joint_3, joint_4, joint_5)
             if is_gripper_work:
                 self.follower_robot[i].GripperCtrl(joint_6, 1000, 0x01, 0)
+        # time.sleep(0.5 * 1.0 / self._exec_hz)
 
     def connect(self):
         if self.is_connected:
@@ -137,10 +146,10 @@ class PiperPlay:
                 time.sleep(0.01)
             
         if self._reset_type & 1 > 0:
-            self.send_action(self._reset_position)
-            # self.send_action(self._reset_position, is_gripper_work=False)
+            # self.send_action(self._reset_position)
+            self.send_action(self._reset_position, is_gripper_work=False)
         
-        
+        time.sleep(3)
         self.is_connected = True
     
     def disconnect(self) -> None:
@@ -217,7 +226,6 @@ class PiperPlay:
             self.logs[f"async_read_camera_{name}_dt_s"] = (
                 time.perf_counter() - before_camread_t
             )
-
         low_dim_data = self.get_low_dim_data()
 
         # Populate output dictionaries
@@ -234,15 +242,16 @@ class PiperPlay:
             self.disconnect()
 
 if __name__ == "__main__":
-    robot = PiperPlay(reset_type=1, reset_position=None)
+    robot = PiperPlay(reset_type=1, reset_position=None, exec_hz=5)
     #robot.connect()
+    time.sleep(1)
     robot.send_action([0.0] * 6 + [80000] + [0.0] * 6 + [80000])
     #robot.send_action([-425, -196, -12000, 53000, 9000, -40000, 0, -425, -196, -12000, 53000, 9000, -40000, 0])
     #robot.send_action([-425, -196, -12000, 53000, 9000, -40000, 0])
     time.sleep(3) 
     #print("low data:", robot.get_low_dim_data())
     print("obs1:", robot.capture_observation())
-    robot.send_action([0.0] * 6 + [300] + [0.0] * 6 + [60000])
+    robot.send_action([0.0] * 6 + [300] + [0.0] * 6 + [300])
     #robot.send_action([0.0] * 6 + [40000]) 
     time.sleep(2)
     #robot.send_action([0.0] * 6 + [0] + [0.0] * 6 + [0])

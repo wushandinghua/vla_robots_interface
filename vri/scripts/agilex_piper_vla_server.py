@@ -30,9 +30,15 @@ python vri/scripts/agilex_piper_vla_server.py
 
 app = Flask(__name__)
 remote_model_ip = "192.168.1.187"
-ws_client_base = _websocket_client_policy.WebsocketClientPolicy(host=remote_model_ip, port=8000)
+ws_client_pick_full_params = _websocket_client_policy.WebsocketClientPolicy(host=remote_model_ip, port=8001)
+ws_client_pick_lora = _websocket_client_policy.WebsocketClientPolicy(host=remote_model_ip, port=8002)
+ws_client_pick_burger_box = _websocket_client_policy.WebsocketClientPolicy(host=remote_model_ip, port=8003)
+ws_client_put_down = _websocket_client_policy.WebsocketClientPolicy(host=remote_model_ip, port=8004)
 ws_client_dict = {
-    "base": ws_client_base
+    "pick_full_params": ws_client_pick_full_params,
+    "pick_lora": ws_client_pick_lora,
+    "pick_burger_box": ws_client_pick_burger_box,
+    "put_down": ws_client_put_down
 }
 # warmup
 fake_observation = {
@@ -50,15 +56,27 @@ for k, ws_client in ws_client_dict.items():
 def vla():
     data = request.json
     logging.info(f"received request: {data}")
+    ws_client_policy = ws_client_dict['pick_full_params']
     instruction = data.get('action')
-    ws_client_policy = ws_client_dict['base']
+    if "pick" in instruction and "lid" in instruction:
+        print("use pick_lora model")
+        ws_client_policy = ws_client_dict['pick_lora']
+    elif "pick" in instruction and "burger box" in instruction:
+        print("use pick_burger_box model")
+        ws_client_policy = ws_client_dict['pick_burger_box']
+    elif "put down" in instruction:
+        print("use put down model")
+        ws_client_policy = ws_client_dict['put_down']
     logging.info(f"instruction: {instruction}, uri: {ws_client_policy._uri}")
     metadata = ws_client_policy.get_server_metadata()
     print("pose:",metadata.get("reset_pose"))
     logging.info(f"Server metadata: {metadata}")
-    
+    max_duration = 40
+    if instruction == "pick up the burger box":
+        max_duration = 45
+    exec_hz = 5
     runtime = _runtime.Runtime(
-            environment=_piper_env.PiperEnvironment(reset_position=metadata.get("reset_pose", None), instruction=instruction, reset_type=3),
+            environment=_piper_env.PiperEnvironment(reset_position=metadata.get("reset_pose", None), instruction=instruction, reset_type=3, exec_hz=exec_hz),
             agent=_policy_agent.PolicyAgent(
                 policy=_action_chunk_policy.ActionChunkPolicy(
                     policy=ws_client_policy,
@@ -67,9 +85,9 @@ def vla():
             ),
             # subscriber=_video_display.VideoDisplay([CAM_LEFT_WRIST, CAM_HIGH, CAM_RIGHT_WRIST]),
             subscriber=None,  # No video display in this case
-            max_hz=5,
+            max_hz=exec_hz,
             num_episodes=1,
-            max_episode_steps=10*500
+            max_episode_steps=exec_hz * max_duration
         )
     action_status_type, video_b64 = runtime.run()
     data = {
@@ -105,5 +123,5 @@ def vla():
     #             robot.follower_robot[i].DisconnectPort()
 
 if __name__ == '__main__':
-    app.run(host='192.168.0.210', port=5000, debug=True)
+    app.run(host='192.168.0.210', port=10004, debug=True)
         
