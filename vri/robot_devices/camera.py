@@ -415,6 +415,7 @@ class WbSocketCamera:
         self._ws.send("get_frame")
         response = self._ws.recv()
         if isinstance(response, str):
+            print("Received string response from server:", response)
             # we're expecting bytes; if the server sends a string, it's an error.
             raise RuntimeError(f"Error in inference server:\n{response}")
         img_array = np.frombuffer(response, np.uint8).reshape((self.height, self.width, 3))
@@ -431,165 +432,168 @@ class WbSocketCamera:
         self.is_connected = False
 
 if __name__ == "__main__":
-    # cameras = {
-    #     "cam_high":{
-    #         "camera_index": 4,
-    #         "fps": 60,
-    #         "width": 640,
-    #         "height": 480,
-    #         "color_mode": "rgb",
-    #         "camera_usb_hardware_index": "usb-0:1.3"
-    #    },
-    #     "CAM_LEFT_WRIST":{
-    #         "camera_index": 2,
-    #         "fps": 25,
-    #         "width": 640,
-    #         "height": 480,
-    #         "color_mode": "rgb",
-    #         "camera_usb_hardware_index": "usb-0:2.1"
-    #         },
-        
-    #     "cam_right_wrist":{
-    #         "camera_index": 6,
-    #         "fps": 25,
-    #         "width": 640,
-    #         "height": 480,
-    #         "color_mode": "rgb",
-    #         "camera_usb_hardware_index": "usb-0:4.4.2"
-    #     }
-    # }
-    # # 连接所有摄像头
-    # camera_objects = {}
-    # for camera_name, camera_config in cameras.items():
-    #     try:
-    #         camera = OpenCVCamera(camera_config)
-    #         camera.connect()
-    #         camera_objects[camera_name] = camera
-    #         print(f"成功连接摄像头: {camera_name}")
-    #     except Exception as e:
-    #         print(f"连接摄像头 {camera_name} 失败: {e}")
-    
-
-    # # 显示摄像头画面
-    # try:
-    #     while True:
-    #         frames = {}
-            
-    #         # 读取所有摄像头的画面
-    #         for camera_name, camera in camera_objects.items():
-    #             try:
-    #                 # 读取图像
-    #                 frame = camera.read()
-                    
-    #                 # 由于OpenCV显示需要BGR格式，如果配置是RGB需要转换
-    #                 if camera.color_mode == "rgb":
-    #                     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-                    
-    #                 # 添加摄像头名称标签
-    #                 cv2.putText(frame, camera_name, (10, 30), 
-    #                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                    
-    #                 frames[camera_name] = frame
-                    
-    #             except Exception as e:
-    #                 print(f"读取摄像头 {camera_name} 失败: {e}")
-    #                 # 创建一个黑色画面作为占位符
-    #                 frames[camera_name] = np.zeros((480, 640, 3), dtype=np.uint8)
-    #                 cv2.putText(frames[camera_name], f"{camera_name}: Error", (10, 30), 
-    #                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-            
-    #         # 根据摄像头数量创建不同的布局
-    #         num_cameras = len(frames)
-            
-    #         if num_cameras == 1:
-    #             # 只有一个摄像头，直接显示
-    #             combined_frame = list(frames.values())[0]
-                
-    #         elif num_cameras == 2:
-    #             # 两个摄像头，水平排列
-    #             frame_list = list(frames.values())
-    #             combined_frame = np.hstack(frame_list)
-                
-    #         elif num_cameras == 3:
-    #             # 三个摄像头，2x2网格（第四个位置留空）
-    #             frame_list = list(frames.values())
-    #             # 前两个水平排列
-    #             top_row = np.hstack(frame_list[:2])
-    #             # 第三个放在第二行中间
-    #             bottom_row = np.hstack([frame_list[2], np.zeros_like(frame_list[2])])
-    #             combined_frame = np.vstack([top_row, bottom_row])
-                
-    #         elif num_cameras == 4:
-    #             # 四个摄像头，2x2网格
-    #             frame_list = list(frames.values())
-    #             top_row = np.hstack(frame_list[:2])
-    #             bottom_row = np.hstack(frame_list[2:4])
-    #             combined_frame = np.vstack([top_row, bottom_row])
-                
-    #         else:
-    #             # 多于4个摄像头，创建网格布局
-    #             frame_list = list(frames.values())
-    #             cols = 2  # 每行2列
-    #             rows = (num_cameras + cols - 1) // cols  # 计算需要的行数
-                
-    #             # 创建空白画布
-    #             combined_height = rows * 480
-    #             combined_width = cols * 640
-    #             combined_frame = np.zeros((combined_height, combined_width, 3), dtype=np.uint8)
-                
-    #             # 将每个画面放置到网格中
-    #             for i, frame in enumerate(frame_list):
-    #                 row = i // cols
-    #                 col = i % cols
-    #                 y_start = row * 480
-    #                 y_end = y_start + 480
-    #                 x_start = col * 640
-    #                 x_end = x_start + 640
-    #                 combined_frame[y_start:y_end, x_start:x_end] = frame
-            
-    #         # 显示合并后的画面
-    #         cv2.imshow('Multiple Cameras', combined_frame)
-            
-    #         # 检测按键，按'q'退出
-    #         if cv2.waitKey(1) & 0xFF == ord('q'):
-    #             break
-                
-    #         # 添加短暂延迟以减少CPU使用率
-    #         time.sleep(0.01)
-            
-    # except KeyboardInterrupt:
-    #     print("用户中断程序")
-    # except Exception as e:
-    #     print(f"程序运行出错: {e}")
-    # finally:
-    #     # 关闭所有OpenCV窗口
-    #     cv2.destroyAllWindows()
-        
-    #     # 断开所有摄像头连接
-    #     for camera_name, camera in camera_objects.items():
-    #         try:
-    #             camera.disconnect()
-    #             print(f"已断开摄像头: {camera_name}")
-    #         except Exception as e:
-    #             print(f"断开摄像头 {camera_name} 失败: {e}")
-
-    camera_config = {
-            "camera_index": 2,
+    cameras = {
+        "cam_high":{
+            "camera_index": 4,
             "fps": 60,
             "width": 640,
             "height": 480,
             "color_mode": "rgb",
-            "camera_usb_hardware_index": "usb-0:2.1",
-            "type": "wb_socket"
+            "camera_usb_hardware_index": "usb-0:2.4",
+            "type": "opencv"
+       },
+        "CAM_LEFT_WRIST":{
+            "camera_index": 2,
+            "fps": 25,
+            "width": 640,
+            "height": 480,
+            "color_mode": "rgb",
+            "camera_usb_hardware_index": "usb-0:4.2.4",
+            "type": "opencv"
+            },
+        
+        "cam_right_wrist":{
+            "camera_index": 6,
+            "fps": 25,
+            "width": 640,
+            "height": 480,
+            "color_mode": "rgb",
+            "camera_usb_hardware_index": "usb-0:4.4.3",
+            "type": "opencv"
+        }
     }
-    camera = WbSocketCamera(camera_config)
-    camera.connect()
-    import time
-    start = time.time()
-    data = camera.async_read()
-    end = time.time()
-    print("exec time:", end - start)
-    print("data type:", type(data), "data shape:", data.shape)
-    print("data:", data)
-    cv2.imwrite('/home/qluan/users/quebinbin/workspace/projects/vla_robots_interface/opencv_image.png', data)
-    camera.disconnect()
+    # 连接所有摄像头
+    camera_objects = {}
+    for camera_name, camera_config in cameras.items():
+        try:
+            camera = OpenCVCamera(camera_config)
+            camera.connect()
+            camera_objects[camera_name] = camera
+            print(f"成功连接摄像头: {camera_name}")
+        except Exception as e:
+            print(f"连接摄像头 {camera_name} 失败: {e}")
+    
+
+    # 显示摄像头画面
+    try:
+        while True:
+            frames = {}
+            
+            # 读取所有摄像头的画面
+            for camera_name, camera in camera_objects.items():
+                try:
+                    # 读取图像
+                    frame = camera.read()
+                    
+                    # 由于OpenCV显示需要BGR格式，如果配置是RGB需要转换
+                    if camera.color_mode == "rgb":
+                        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+                    
+                    # 添加摄像头名称标签
+                    cv2.putText(frame, camera_name, (10, 30), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    
+                    frames[camera_name] = frame
+                    
+                except Exception as e:
+                    print(f"读取摄像头 {camera_name} 失败: {e}")
+                    # 创建一个黑色画面作为占位符
+                    frames[camera_name] = np.zeros((480, 640, 3), dtype=np.uint8)
+                    cv2.putText(frames[camera_name], f"{camera_name}: Error", (10, 30), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            
+            # 根据摄像头数量创建不同的布局
+            num_cameras = len(frames)
+            
+            if num_cameras == 1:
+                # 只有一个摄像头，直接显示
+                combined_frame = list(frames.values())[0]
+                
+            elif num_cameras == 2:
+                # 两个摄像头，水平排列
+                frame_list = list(frames.values())
+                combined_frame = np.hstack(frame_list)
+                
+            elif num_cameras == 3:
+                # 三个摄像头，2x2网格（第四个位置留空）
+                frame_list = list(frames.values())
+                # 前两个水平排列
+                top_row = np.hstack(frame_list[:2])
+                # 第三个放在第二行中间
+                bottom_row = np.hstack([frame_list[2], np.zeros_like(frame_list[2])])
+                combined_frame = np.vstack([top_row, bottom_row])
+                
+            elif num_cameras == 4:
+                # 四个摄像头，2x2网格
+                frame_list = list(frames.values())
+                top_row = np.hstack(frame_list[:2])
+                bottom_row = np.hstack(frame_list[2:4])
+                combined_frame = np.vstack([top_row, bottom_row])
+                
+            else:
+                # 多于4个摄像头，创建网格布局
+                frame_list = list(frames.values())
+                cols = 2  # 每行2列
+                rows = (num_cameras + cols - 1) // cols  # 计算需要的行数
+                
+                # 创建空白画布
+                combined_height = rows * 480
+                combined_width = cols * 640
+                combined_frame = np.zeros((combined_height, combined_width, 3), dtype=np.uint8)
+                
+                # 将每个画面放置到网格中
+                for i, frame in enumerate(frame_list):
+                    row = i // cols
+                    col = i % cols
+                    y_start = row * 480
+                    y_end = y_start + 480
+                    x_start = col * 640
+                    x_end = x_start + 640
+                    combined_frame[y_start:y_end, x_start:x_end] = frame
+            
+            # 显示合并后的画面
+            cv2.imshow('Multiple Cameras', combined_frame)
+            
+            # 检测按键，按'q'退出
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+                
+            # 添加短暂延迟以减少CPU使用率
+            time.sleep(0.01)
+            
+    except KeyboardInterrupt:
+        print("用户中断程序")
+    except Exception as e:
+        print(f"程序运行出错: {e}")
+    finally:
+        # 关闭所有OpenCV窗口
+        cv2.destroyAllWindows()
+        
+        # 断开所有摄像头连接
+        for camera_name, camera in camera_objects.items():
+            try:
+                camera.disconnect()
+                print(f"已断开摄像头: {camera_name}")
+            except Exception as e:
+                print(f"断开摄像头 {camera_name} 失败: {e}")
+
+    # camera_config = {
+    #         "camera_index": 2,
+    #         "fps": 60,
+    #         "width": 640,
+    #         "height": 480,
+    #         "color_mode": "rgb",
+    #         "camera_usb_hardware_index": "usb-0:2.1",
+    #         "type": "wb_socket"
+    # }
+    # camera = WbSocketCamera(camera_config)
+    # camera.connect()
+    # import time
+    # start = time.time()
+    # data = camera.async_read()
+    # end = time.time()
+    # print("exec time:", end - start)
+    # print("data type:", type(data), "data shape:", data.shape)
+    # print("data:", data)
+    # cv2.imwrite('/home/qluan/users/quebinbin/workspace/projects/vla_robots_interface/opencv_image.png', data)
+    # camera.disconnect()

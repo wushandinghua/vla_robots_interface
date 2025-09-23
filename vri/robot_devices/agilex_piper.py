@@ -25,6 +25,7 @@ _PIPER_ROBOT_CONFIG = {
             "color_mode": "rgb",
             "camera_usb_hardware_index": "usb-0:2.4",
             "type": "wb_socket"
+            # "type": "opencv"
        },
         CAM_LEFT_WRIST:{
             "camera_index": 2,
@@ -117,8 +118,10 @@ class PiperPlay:
             joint_4 = int(round(target_joint_positions[i * 7 + 4]))
             joint_5 = int(round(target_joint_positions[i * 7 + 5]))
             joint_6 = int(round(target_joint_positions[i * 7 + 6]))
+            # if joint_6 < 700: joint_6 = -300
             self.follower_robot[i].MotionCtrl_2(0x01, 0x01, 50, 0x00)
             self.follower_robot[i].JointCtrl(joint_0, joint_1, joint_2, joint_3, joint_4, joint_5)
+            # if is_gripper_work and i != 1:
             if is_gripper_work:
                 self.follower_robot[i].GripperCtrl(joint_6, 1000, 0x01, 0)
         # time.sleep(0.5 * 1.0 / self._exec_hz)
@@ -146,8 +149,8 @@ class PiperPlay:
                 time.sleep(0.01)
             
         if self._reset_type & 1 > 0:
-            # self.send_action(self._reset_position)
-            self.send_action(self._reset_position, is_gripper_work=False)
+            self.send_action(self._reset_position)
+            # self.send_action(self._reset_position, is_gripper_work=False)
         
         time.sleep(3)
         self.is_connected = True
@@ -244,14 +247,15 @@ class PiperPlay:
 if __name__ == "__main__":
     robot = PiperPlay(reset_type=1, reset_position=None, exec_hz=5)
     #robot.connect()
-    time.sleep(1)
-    robot.send_action([0.0] * 6 + [80000] + [0.0] * 6 + [80000])
-    #robot.send_action([-425, -196, -12000, 53000, 9000, -40000, 0, -425, -196, -12000, 53000, 9000, -40000, 0])
+    print("low data:", robot.get_low_dim_data())
+    time.sleep(2)
+    robot.send_action([0.0] * 6 + [78000] + [0.0] * 6 + [78000])
+    # robot.send_action([-425, -196, -12000, 53000, 9000, -40000, 50000, -425, -196, -12000, 53000, 9000, -40000, 50000])
     #robot.send_action([-425, -196, -12000, 53000, 9000, -40000, 0])
     time.sleep(3) 
     #print("low data:", robot.get_low_dim_data())
     print("obs1:", robot.capture_observation())
-    robot.send_action([0.0] * 6 + [300] + [0.0] * 6 + [300])
+    robot.send_action([0.0] * 6 + [0] + [0.0] * 6 + [0])
     #robot.send_action([0.0] * 6 + [40000]) 
     time.sleep(2)
     #robot.send_action([0.0] * 6 + [0] + [0.0] * 6 + [0])

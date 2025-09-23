@@ -77,8 +77,8 @@ class RealEnv:
             time.sleep(constants.DT)
             return self.get_observation()
         
-        # return self._last_observation
-        return self.get_observation()
+        return self._last_observation
+        # return self.get_observation()
 
 
 def make_real_env(reset_position: Optional[List[float]] = None, reset_type: int = 3, exec_hz: int = 10) -> RealEnv:
