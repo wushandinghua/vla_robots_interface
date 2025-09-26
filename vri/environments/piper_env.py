@@ -19,6 +19,7 @@ class PiperEnvironment(_base_env.Environment):
         instruction: str = None,
         reset_type: int = 3, # 0: no reset, 1: reset when robot connect, 2: reset when robot disconnect, 3: reset when robot connect and disconnect
         exec_hz: int = 10,
+        max_action_queue_size: int = 20,
     ) -> None:
         self._env = _real_env.make_real_env(reset_position=reset_position, reset_type=reset_type, exec_hz=exec_hz)
         self._render_height = render_height
@@ -26,8 +27,9 @@ class PiperEnvironment(_base_env.Environment):
 
         self._ts = None
         self.instruction = instruction
+        self._max_action_queue_size = max_action_queue_size
         # action queue for the last 10 actions
-        self._exec_action_queue = collections.deque(maxlen=20)
+        self._exec_action_queue = collections.deque(maxlen=max_action_queue_size)
         # cache images of cam high
         self._cam_high_images = []
         self._cam_left_wrist_images = []
@@ -41,7 +43,7 @@ class PiperEnvironment(_base_env.Environment):
     def is_episode_complete(self) -> bool:
         """Check if the current episode is complete."""
         end = time.time()
-        if len(self._exec_action_queue) < 20:
+        if len(self._exec_action_queue) < self._max_action_queue_size:
             return False
         arr = np.array(self._exec_action_queue) # shape=(10, 14)
         diff = arr.max(axis=0) - arr.min(axis=0)

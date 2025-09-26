@@ -53,6 +53,7 @@ def vla():
     chunk_size_real = CHUNK_SIZE
     max_duration = 40
     exec_hz = 10
+    max_action_queue_size = 20 # 在判断动作是否完成时，最大考虑最近多少个动作
     ws_client_policy = ws_client_dict['ws_client_action_chunk_20']
     instruction = data.get('action')
     logging.info(f"instruction: {instruction}, uri: {ws_client_policy._uri}")
@@ -64,8 +65,12 @@ def vla():
     if "burger box" in instruction or "put down" in instruction or "eye drop" in instruction:
         max_duration = 45
         exec_hz = 5
+    
+    if "put down" in instruction:
+        max_action_queue_size = 40
+    
     runtime = _runtime.Runtime(
-            environment=_piper_env.PiperEnvironment(reset_position=metadata.get("reset_pose", None), instruction=instruction, reset_type=3, exec_hz=exec_hz),
+            environment=_piper_env.PiperEnvironment(reset_position=metadata.get("reset_pose", None), instruction=instruction, reset_type=3, exec_hz=exec_hz, max_action_queue_size=max_action_queue_size),
             agent=_policy_agent.PolicyAgent(
                 policy=_action_chunk_policy.ActionChunkPolicy(
                     policy=ws_client_policy,
@@ -81,7 +86,8 @@ def vla():
     action_status_type, video_b64 = runtime.run()
     data = {
             "action_status_type": action_status_type,
-            "video_b64": video_b64
+            "video_b64": ""
+            #"video_b64": video_b64
     }
     return jsonify({"status": "success", "message": "robot action complete", "data": data}), 200
     # try:
