@@ -67,7 +67,8 @@ def vla():
         exec_hz = 5
     
     if "put down" in instruction:
-        max_action_queue_size = 40
+        max_action_queue_size = 50
+        max_duration = 50
     
     runtime = _runtime.Runtime(
             environment=_piper_env.PiperEnvironment(reset_position=metadata.get("reset_pose", None), instruction=instruction, reset_type=3, exec_hz=exec_hz, max_action_queue_size=max_action_queue_size),
