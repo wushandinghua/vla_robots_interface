@@ -14,11 +14,22 @@ logging.getLogger().setLevel(logging.INFO)
 import numpy as np
 
 """
+1. activate env:
 source /home/nvidia/users/quebinbin/workspace/projects/openpi/examples/galaxea_r1/.venv/bin/activate
+2. install required packages:
 uv pip install flask==3.1.1
 uv pip install imageio==2.37.0
 uv pip install imageio-ffmpeg==0.6.0
-export PYTHONPATH=/home/nvidia/users/quebinbin/workspace/projects/vla_robots_interface:$PYTHONPATH
+uv pip install opencv-python==4.12.0.88
+uv pip install Pillow
+uv pip install imageio
+uv pip install einops
+uv pip install matplotlib==3.10.0
+uv pip install dm_env==1.6
+uv pip install websockets==14.1
+uv pip install msgpack==1.1.0
+3. execute vla server:
+python setup.py install OR export PYTHONPATH=/home/nvidia/users/quebinbin/workspace/projects/vla_robots_interface:$PYTHONPATH
 python vri/scripts/airbot_vla_server.py
 """
 

@@ -11,8 +11,11 @@ logging.getLogger().setLevel(logging.INFO)
 import numpy as np
 
 """
+1. create conda env:
 conda create -n piper_run_env_v179 python=3.10.18
 conda activate piper_run_env_v179
+2. install piper_sdk refer to https://github.com/agilexrobotics/piper_sdk
+3. install required packages:
 pip install flask==3.1.1
 pip install imageio==2.37.0
 pip install imageio-ffmpeg==0.6.0
@@ -24,7 +27,8 @@ pip install matplotlib==3.10.0
 pip install dm_env==1.6
 pip install websockets==14.1
 pip install msgpack==1.1.0
-export PYTHONPATH=/home/qluan/users/quebinbin/workspace/projects/vla_robots_interface:$PYTHONPATH
+4.execute vla server:
+python setup.py install OR export PYTHONPATH=/home/qluan/users/quebinbin/workspace/projects/vla_robots_interface:$PYTHONPATH
 python vri/scripts/agilex_piper_vla_server.py
 """
 

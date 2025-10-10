@@ -15,11 +15,22 @@ import numpy as np
 import argparse
 
 """
+1. activate conda env:
 conda activate airbot_5_8
+2. install required packages:
 pip install flask==3.1.1
 pip install imageio==2.37.0
 pip install imageio-ffmpeg==0.6.0
-export PYTHONPATH=/home/zq/work/fnii/vla_robots_interface:$PYTHONPATH
+pip install opencv-python==4.12.0.88
+pip install Pillow
+pip install imageio
+pip install einops
+pip install matplotlib==3.10.0
+pip install dm_env==1.6
+pip install websockets==14.1
+pip install msgpack==1.1.0
+3. execute vla server:
+python setup.py install OR export PYTHONPATH=/home/zq/work/fnii/vla_robots_interface:$PYTHONPATH
 python vri/scripts/airbot_vla_server.py
 """
 
