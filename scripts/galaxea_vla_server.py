@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from vri.scripts import runtime as _runtime
+from vri.utils import runtime as _runtime
 from vri.subscribers import video_display as _video_display
 from vri.environments import galaxea_env as _galaxea_env 
 from vri.agents import policy_agent as _policy_agent
